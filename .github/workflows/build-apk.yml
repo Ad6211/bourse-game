@@ -71,26 +71,24 @@ jobs:
         cd BourseGame
         cordova build android --release
     
-    - name: Find and upload APK files
+    - name: Find APK files
+      id: find_apk
       run: |
         echo "Looking for APK files..."
-        find BourseGame -name "*.apk" -type f
+        find BourseGame -name "*.apk" -type f > apk_list.txt
+        cat apk_list.txt
+        if [ -s apk_list.txt ]; then
+          echo "found=true" >> $GITHUB_OUTPUT
+        else
+          echo "found=false" >> $GITHUB_OUTPUT
+        fi
       shell: bash
     
-    - name: Upload release APK
+    - name: Upload APK files
+      if: steps.find_apk.outputs.found == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: BourseGame-APK
         path: |
-          BourseGame/platforms/android/app/build/outputs/apk/release/*.apk
-          BourseGame/platforms/android/build/outputs/apk/release/*.apk
-        continue-on-error: true
-    
-    - name: Upload debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: BourseGame-APK-Debug
-        path: |
-          BourseGame/platforms/android/app/build/outputs/apk/debug/*.apk
-          BourseGame/platforms/android/build/outputs/apk/debug/*.apk
+          BourseGame/**/*.apk
         continue-on-error: true
