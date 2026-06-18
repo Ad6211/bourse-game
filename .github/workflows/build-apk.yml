@@ -1,0 +1,83 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    
+    - name: Setup Java JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install Cordova
+      run: npm install -g cordova
+    
+    - name: Create Cordova project
+      run: |
+        cordova create BourseGame com.boursegame.game "Bourse Game"
+        cd BourseGame
+        cordova platform add android
+    
+    - name: Copy game files
+      run: |
+        cp index.html BourseGame/www/
+        cp style.css BourseGame/www/
+        cp game.js BourseGame/www/
+        cp manifest.json BourseGame/www/
+        cp sw.js BourseGame/www/
+        cp icon.png BourseGame/www/
+    
+    - name: Update config.xml
+      run: |
+        cat > BourseGame/config.xml << 'EOF'
+        <?xml version='1.0' encoding='utf-8'?>
+        <widget id="com.boursegame.game" version="1.0.0"
+            xmlns="http://www.w3.org/ns/widgets"
+            xmlns:cdv="http://cordova.apache.org/ns/1.0">
+            <name>Bourse Game</name>
+            <description>Jeu de bourse virtuel - Investissez et gagnez!</description>
+            <author email="contact@boursegame.com" href="https://boursegame.com">Bourse Game Team</author>
+            <content src="index.html" />
+            <access origin="*" />
+            <allow-intent href="http://*/*" />
+            <allow-intent href="https://*/*" />
+            <icon src="www/icon.png" />
+            <splash src="www/icon.png" />
+            <preference name="Orientation" value="portrait" />
+            <preference name="Fullscreen" value="false" />
+            <preference name="WebViewBounce" value="false" />
+            <preference name="android-minSdkVersion" value="22" />
+            <preference name="android-targetSdkVersion" value="36" />
+        </widget>
+        EOF
+    
+    - name: Build APK
+      run: |
+        cd BourseGame
+        cordova build android --release
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: BourseGame-APK
+        path: BourseGame/platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk
+    
+    - name: Upload signed APK (if available)
+      uses: actions/upload-artifact@v3
+      with:
+        name: BourseGame-APK-Debug
+        path: BourseGame/platforms/android/app/build/outputs/apk/debug/app-debug.apk
