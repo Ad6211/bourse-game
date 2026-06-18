@@ -15,7 +15,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
     
     - name: Setup Java JDK
       uses: actions/setup-java@v3
@@ -71,14 +71,26 @@ jobs:
         cd BourseGame
         cordova build android --release
     
-    - name: Upload APK
+    - name: Find and upload APK files
+      run: |
+        echo "Looking for APK files..."
+        find BourseGame -name "*.apk" -type f
+      shell: bash
+    
+    - name: Upload release APK
       uses: actions/upload-artifact@v4
       with:
         name: BourseGame-APK
-        path: BourseGame/platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk
+        path: |
+          BourseGame/platforms/android/app/build/outputs/apk/release/*.apk
+          BourseGame/platforms/android/build/outputs/apk/release/*.apk
+        continue-on-error: true
     
-    - name: Upload signed APK (if available)
+    - name: Upload debug APK
       uses: actions/upload-artifact@v4
       with:
         name: BourseGame-APK-Debug
-        path: BourseGame/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+        path: |
+          BourseGame/platforms/android/app/build/outputs/apk/debug/*.apk
+          BourseGame/platforms/android/build/outputs/apk/debug/*.apk
+        continue-on-error: true
