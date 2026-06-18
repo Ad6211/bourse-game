@@ -26,8 +26,9 @@ jobs:
     - name: Install Cordova
       run: npm install -g cordova
     
-    - name: Create Cordova project
+    - name: Clean and create Cordova project
       run: |
+        rm -rf BourseGame
         cordova create BourseGame com.boursegame.game "Bourse Game"
         cd BourseGame
         cordova platform add android
