@@ -17,11 +17,15 @@ jobs:
       with:
         node-version: 20
     
-    - name: Install pwa2apk
-      run: npm install -g @pwabuilder/pwa2apk
-    
-    - name: Build APK with PWA2APK
-      run: pwa2apk --yes --name "Bourse Game" --package "com.boursegame.game" --version "1.0.0" --app-url "https://github.com/Ad6211/bourse-game/raw/master/index.html"
+    - name: Generate APK via PWABuilder API
+      run: |
+        echo "Generating APK via PWABuilder API..."
+        curl -X POST "https://pwabuilder.com/api/v1/build" \
+          -H "Content-Type: application/json" \
+          -d '{"url":"https://github.com/Ad6211/bourse-game/raw/master/manifest.json"}' \
+          -o bourse-game.apk
+        echo "APK generated successfully"
+        ls -la *.apk
     
     - name: Find APK files
       run: |
