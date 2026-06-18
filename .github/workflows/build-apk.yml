@@ -26,16 +26,26 @@ jobs:
     - name: Install Capacitor
       run: npm install -g @capacitor/cli @capacitor/android
     
+    - name: Prepare web assets
+      run: |
+        mkdir -p www
+        cp index.html www/
+        cp style.css www/
+        cp game.js www/
+        cp manifest.json www/
+        cp sw.js www/
+        cp icon.png www/
+    
     - name: Initialize Capacitor
       run: |
         npm init -y
         npm install @capacitor/core @capacitor/android
-        npx cap init "Bourse Game" "com.boursegame.game" --web-dir .
+        npx cap init "Bourse Game" "com.boursegame.game" --web-dir www
     
     - name: Add Android platform
       run: npx cap add android
     
-    - name: Copy web assets
+    - name: Copy web assets to Android
       run: npx cap copy android
     
     - name: Build APK
