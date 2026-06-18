@@ -48,10 +48,13 @@ jobs:
     - name: Copy web assets to Android
       run: npx cap copy android
     
-    - name: Build APK
+    - name: Configure Gradle to skip duplicate classes check
       run: |
         cd android
-        ./gradlew assembleDebug
+        echo "android.enableJetifier=true" >> gradle.properties
+        echo "android.useAndroidX=true" >> gradle.properties
+        echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8" >> gradle.properties
+        ./gradlew assembleDebug --warning-mode=all
     
     - name: Find APK
       run: |
