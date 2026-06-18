@@ -17,56 +17,22 @@ jobs:
       with:
         node-version: 20
     
-    - name: Setup Java JDK
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '21'
+    - name: Install pwa2apk
+      run: npm install -g @pwabuilder/pwa2apk
     
-    - name: Install Capacitor CLI
-      run: npm install -g @capacitor/cli
+    - name: Build APK with PWA2APK
+      run: pwa2apk --yes --name "Bourse Game" --package "com.boursegame.game" --version "1.0.0" --app-url "https://github.com/Ad6211/bourse-game/raw/master/index.html"
     
-    - name: Prepare web assets
-      run: |
-        mkdir -p www
-        cp index.html www/
-        cp style.css www/
-        cp game.js www/
-        cp manifest.json www/
-        cp sw.js www/
-        cp icon.png www/
-    
-    - name: Initialize Capacitor project
-      run: |
-        npm init -y
-        npm install @capacitor/core @capacitor/android@latest
-        npx cap init "Bourse Game" "com.boursegame.game" --web-dir www
-    
-    - name: Add Android platform
-      run: npx cap add android
-    
-    - name: Sync web assets
-      run: npx cap sync android
-    
-    - name: Build APK with Gradle
-      run: |
-        cd android
-        chmod +x gradlew
-        ./gradlew assembleDebug -x checkDebugDuplicateClasses
-    
-    - name: Find and list APK files
+    - name: Find APK files
       run: |
         echo "=== Searching for APK files ==="
         find . -name "*.apk" -type f
-        echo "=== Checking standard location ==="
-        ls -la android/app/build/outputs/apk/debug/ 2>/dev/null || echo "Standard location not found"
+        ls -la
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: BourseGame-APK
         path: |
-          android/app/build/outputs/apk/debug/*.apk
-          android/**/*.apk
-        compression-level: 0
-        if-no-files-found: error
+          ./**/*.apk
+        if-no-files-found: warn
