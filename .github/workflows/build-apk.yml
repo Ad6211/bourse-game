@@ -23,72 +23,20 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
     
-    - name: Install Cordova
-      run: npm install -g cordova
+    - name: Install PWA Builder CLI
+      run: npm install -g @pwabuilder/cli
     
-    - name: Clean and create Cordova project
+    - name: Build APK with PWA Builder
       run: |
-        rm -rf BourseGame
-        cordova create BourseGame com.boursegame.game "Bourse Game"
-        cd BourseGame
-        cordova platform add android
+        pwa build --android --yes
+        ls -la *.apk 2>/dev/null || echo "No APK in root"
+        find . -name "*.apk" -type f
     
-    - name: Copy game files
-      run: |
-        cp index.html BourseGame/www/
-        cp style.css BourseGame/www/
-        cp game.js BourseGame/www/
-        cp manifest.json BourseGame/www/
-        cp sw.js BourseGame/www/
-        cp icon.png BourseGame/www/
-    
-    - name: Update config.xml
-      run: |
-        cat > BourseGame/config.xml << 'EOF'
-        <?xml version='1.0' encoding='utf-8'?>
-        <widget id="com.boursegame.game" version="1.0.0"
-            xmlns="http://www.w3.org/ns/widgets"
-            xmlns:cdv="http://cordova.apache.org/ns/1.0">
-            <name>Bourse Game</name>
-            <description>Jeu de bourse virtuel - Investissez et gagnez!</description>
-            <author email="contact@boursegame.com" href="https://boursegame.com">Bourse Game Team</author>
-            <content src="index.html" />
-            <access origin="*" />
-            <allow-intent href="http://*/*" />
-            <allow-intent href="https://*/*" />
-            <icon src="www/icon.png" />
-            <splash src="www/icon.png" />
-            <preference name="Orientation" value="portrait" />
-            <preference name="Fullscreen" value="false" />
-            <preference name="WebViewBounce" value="false" />
-            <preference name="android-minSdkVersion" value="22" />
-            <preference name="android-targetSdkVersion" value="36" />
-        </widget>
-        EOF
-    
-    - name: Build APK
-      run: |
-        cd BourseGame
-        cordova build android --release
-    
-    - name: Find APK files
-      id: find_apk
-      run: |
-        echo "Looking for APK files..."
-        find BourseGame -name "*.apk" -type f > apk_list.txt
-        cat apk_list.txt
-        if [ -s apk_list.txt ]; then
-          echo "found=true" >> $GITHUB_OUTPUT
-        else
-          echo "found=false" >> $GITHUB_OUTPUT
-        fi
-      shell: bash
-    
-    - name: Upload APK files
-      if: steps.find_apk.outputs.found == 'true'
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: BourseGame-APK
         path: |
-          BourseGame/**/*.apk
+          *.apk
+          **/*.apk
         continue-on-error: true
